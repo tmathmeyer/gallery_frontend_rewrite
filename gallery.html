@@ -1,6 +1,6 @@
 <html>
   <head>
-  <script src="gallery.js"></script>
+  <script src="require.js" data-main="load_images"></script>
   <style>
   #gallery {
     position: fixed;
@@ -14,7 +14,35 @@
     <div id="gallery">
     </div>
     <script>
-      doBasic();
+      requirejs(['load_images', 'gallery'], function(load_images, gallery) {
+        var G = new gallery.Gallery('gallery', 14, 2);
+        G.SetExcludedTiles([[0,0], [0,1], [1,0], [1,1]], -1);
+        G.Render([
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg'),
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg'),
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg'),
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg'),
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg'),
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg'),
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg'),
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg'),
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg'),
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg'),
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg'),
+          new load_images.RealImageLoader('C.jpg'),
+          new load_images.RealImageLoader('D.jpg')])
+      })
     </script>
   </body>
 </html>

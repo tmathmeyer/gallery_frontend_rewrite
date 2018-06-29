@@ -4,6 +4,8 @@ declare var ResizeObserver;
 let __UNIQUE_ID__ = 1;
 export abstract class GalleryImage {
   private __UID: number;
+  protected image : HTMLImageElement;
+
   constructor(public imageUrl: string) {
     this.__UID = __UNIQUE_ID__++;
   }
@@ -25,14 +27,18 @@ export abstract class GalleryImage {
   abstract GetTypeName() : string;
 
   /* Gives subclasses an opportunity to tweak the dom element */
-  abstract GetDomElement() : HTMLElement;
+  abstract async GetDomElement() : Promise<any>;
 
   /* Subclasses can use this to get a basic element */
-  protected BareDomElement() : HTMLElement {
-    let _element = document.createElement('img');
-    _element.id = this.GetUniqueID();
-    _element.src = this.imageUrl;
-    return _element;
+  protected BareDomElement() : Promise<any> {
+    this.image = new Image();
+    this.image.id = this.GetUniqueID();
+    this.image.src = this.imageUrl;
+    return new Promise(resolve => {
+      this.image.onload = function() {
+        resolve(this);
+      }
+    });
   }
 }
 
@@ -145,10 +151,6 @@ class VerticallyExpandingGrid {
     this.updateHighestOpenRow();
   }
 
-  public Print() {
-    console.log(this.occupied);
-  }
-
   private placeElement(eid, elements, row, column, update) : GalleryImage[] {
     let _remaining = this.openStreakLength(row, column);
     let _max_size = Math.floor(this.gridColumns / 1.8);
@@ -178,13 +180,13 @@ class VerticallyExpandingGrid {
         let _dims = elements[idx].GetOptimalDimensions();
         let _expected_height = Math.max(1, ~~(_pref_size / elements[idx].GetAspectRatio()));
         if (_dims[0] == 0 && this.canFitWithDimensions(row, column, _pref_size, _expected_height)) {
-          //console.log(row, column, _pref_size, _expected_height, eid)
           for(let x=0; x<_pref_size; x++) {
             for(let y=0; y<_expected_height; y++) {
               this.SetTileOccupied([[column+x, row+y]], eid);
             }
           }
-          update(elements.splice(idx, 1)[0], column, row, _pref_size, _expected_height);
+          let _element = elements.splice(idx, 1);
+          update(_element[0], column, row, _pref_size, _expected_height);
           return elements;
         }
       }
@@ -196,12 +198,11 @@ class VerticallyExpandingGrid {
 
   public ArrangeElements(elements: GalleryImage[], update: (img: GalleryImage, x, y, w, h)=>void) {
     while(elements.length > 0) {
-      this.Print();
       let _row_opening = this.rowOpening(this.highest_open_row);
       elements = this.placeElement(elements.length, elements, this.highest_open_row, _row_opening, update);
       this.updateHighestOpenRow();
     }
-    return this.highest_open_row + 2;
+    return this.occupied.length;
   }
 
 }
@@ -210,7 +211,7 @@ export class Gallery {
   private rawImages : GalleryImage[];
   private gridContainer : HTMLElement;
   private generated_rows: number;
-  private tileCoords : number[][];
+  private tileCoords : [number, number][];
   private imageElementMap : Map<string, [GalleryImage, HTMLElement]>;
   private eventHandlers : Map<string, Map<string, (img: GalleryImage)=>void>>;
   private listenerInterceptors : Map<string, (event)=>void>;
@@ -248,6 +249,7 @@ export class Gallery {
 
   private repaint() {
     let _g = new VerticallyExpandingGrid(this.gridColumns, this.minimumSize);
+    _g.SetTileOccupied(this.tileCoords, -1);
     let _this_capture = this;
     this.generated_rows = _g.ArrangeElements(this.rawImages, (E, x, y, w, h)=>{
       let _element = _this_capture.imageElementMap[E.GetUniqueID()][1];
@@ -283,15 +285,15 @@ export class Gallery {
     }
   }
 
-  public SetExcludedTiles(tileCoords: number[][]) {
+  public SetExcludedTiles(tileCoords: [number, number][]) {
     this.tileCoords = tileCoords;
     this.repaint();
   }
 
-  public Render(images: GalleryImage[]) {
+  public async Render(images: GalleryImage[]) {
     this.rawImages = this.rawImages.concat(images);
     for(let img of images) {
-      let _dom_element = img.GetDomElement();
+      let _dom_element = await img.GetDomElement();
       this.applyListeners(_dom_element);
       this.gridContainer.appendChild(_dom_element);
       this.imageElementMap[img.GetUniqueID()] = [img, _dom_element];
