@@ -1,0 +1,16 @@
+<html>
+  <head>
+  <script src="gallery.js" />
+  </head>
+  <body>
+    <div id="gallery">
+    </div>
+
+    <script>
+      gallery = new Gallery("gallery");
+      gallery.render(images);
+      gallery.onEvent('mouseover', handleGalleryMouseOver)
+      gallery.onEvent('click', handleGalleryMouseClick)
+    </script>
+  </body>
+</html>
