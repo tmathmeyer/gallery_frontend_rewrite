@@ -8,6 +8,13 @@
     left: 0;
     right: 0;
   }
+  .GalleryImage-ImageLoader {
+    margin: 2px;
+  }
+  @keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
   </style>
   </head>
   <body>
@@ -15,7 +22,7 @@
     </div>
     <script>
       requirejs(['load_images', 'gallery'], function(load_images, gallery) {
-        var G = new gallery.Gallery('gallery', 14, 2);
+        var G = new gallery.Gallery('gallery', 22, 3);
         G.SetExcludedTiles([[0,0], [0,1], [1,0], [1,1]], -1);
         G.Render([
           new load_images.RealImageLoader('C.jpg'),

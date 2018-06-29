@@ -13,7 +13,9 @@ export class RealImageLoader extends GalleryImage {
     }
     let _result = document.createElement('div');
     _result.style.background = "url("+this.imageUrl+")";
+    _result.style.animation = 'fadein ' + (Math.random() * 7 + 1) + 's';
     _result.style['background-size'] = 'cover';
+    _result.classList.add('GalleryImage-'+this.GetTypeName());
     return new Promise(resolve => { resolve(_result); });
   }
 
